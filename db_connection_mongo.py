@@ -1,9 +1,11 @@
 #-------------------------------------------------------------------------
 # AUTHOR: your name
-# FILENAME: title of the source file
-# SPECIFICATION: description of the program
+# FILENAME: index.py
+# SPECIFICATION: The program includes a set of functions for interacting with a MongoDB database.
+# It includes functions for establishing a database connection, creating, updating, and deleting documents,
+# as well as generating an index of terms with their associated document counts.
 # FOR: CS 4250- Assignment #2
-# TIME SPENT: how long it took you to complete the assignment
+# TIME SPENT: 4h
 #-----------------------------------------------------------*/
 
 #IMPORTANT NOTE: DO NOT USE ANY ADVANCED PYTHON LIBRARY TO COMPLETE THIS CODE SUCH AS numpy OR pandas. You have to work here only with
@@ -12,7 +14,6 @@
 #importing some Python libraries
 # --> add your Python code here
 from pymongo import MongoClient
-import datetime
 import re
 import string
 
@@ -129,6 +130,11 @@ def getIndex(col):
                     "_id": 0,
                     "document": "$title",
                     "count": "$term.count"
+                }
+            },
+            {
+                "$sort": {
+                    "document": 1  # Sort in ascending order by the "term" field
                 }
             }
         ]
