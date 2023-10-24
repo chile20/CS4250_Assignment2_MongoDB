@@ -87,29 +87,53 @@ def getIndex(col):
     # Query the database to return the documents where each term occurs with their corresponding count. Output example:
     # {'baseball':'Exercise:1','summer':'Exercise:1,California:1,Arizona:1','months':'Exercise:1,Discovery:3'}
     # --> add your Python code here
+    termList = {}
+    # Retrieve all terms
     pipeline = [
         {
-            "$lookup": {
-                "from": "documents",  # The collection you want to join with
-                "localField": "term",  # The local field in the "term" collection
-                "foreignField": "term",  # The foreign field in the "index" collection
-                "as": "term_docs"  # The alias for the joined data
-            }
-        },
-        {
-            "$unwind": "$term_docs"  # Unwind the array created by the lookup
+            "$unwind": "$term"
         },
         {
             "$group": {
-                "_id": "$term",  # Group by the term
-                "docCount": {
-                    "$addToSet": "$term_docs.title"  # Create an array of unique document titles
-                }
+                "_id": "$term.term"
             }
         },
+        {
+            "$project": {
+                "_id": 0,
+                "term": "$_id"
+            }
+        },
+        {
+            "$sort": {
+                "term": 1  # Sort in ascending order by the "term" field
+            }
+        }
+
     ]
     result = col.aggregate(pipeline)
-    # termList = {}
     for item in result:
-        print(item)
-        print ("divider")
+        term = item['term']
+        # Retrieve documents where the term occurs with their counts
+        pipeline = [
+            {
+                "$unwind": "$term"
+            },
+            {
+                "$match": {
+                    "term.term": term
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "document": "$title",
+                    "count": "$term.count"
+                }
+            }
+        ]
+        term_documents = col.aggregate(pipeline)
+        docCountItems = [f"{row['document']}:{row['count']}" for row in term_documents]
+        docCount = ", ".join(docCountItems)
+        termList[term] = docCount
+    return termList
