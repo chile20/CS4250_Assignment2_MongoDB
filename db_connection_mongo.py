@@ -52,7 +52,6 @@ def createDocument(col, docId, docText, docTitle, docDate, docCat):
     termObjects = []
     for term, count in indexList.items():
         termObjects.append({"term": term, "count": count})
-    print(termObjects)
 
     #Producing a final document as a dictionary including all the required document fields
     # --> add your Python code here
